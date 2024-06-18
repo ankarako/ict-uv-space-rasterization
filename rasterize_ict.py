@@ -18,5 +18,6 @@ if __name__ == "__main__":
     # import generic neutral mesh
     util.io.load_generic_model(conf.ict_dir)
     v_pos = util.mesh_props.get_vertex_positions()
+    v_uvs = util.mesh_props.get_vertex_uvs()
     t_pos_idx = util.mesh_props.get_polygon_indices()
     print("ICT uv rasterization app terminated.")
