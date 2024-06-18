@@ -34,6 +34,8 @@ def get_polygon_indices():
             idx = []
             for i in poly.vertices:
                 idx += [i]
+            if len(idx) != 4:
+                continue
             idx = np.array(idx)
             indices += [idx]
         return np.stack(indices).astype(np.uint64)
