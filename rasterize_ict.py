@@ -23,19 +23,22 @@ if __name__ == "__main__":
     
     # import generic neutral mesh
     print("loading generic neurtral mesh...")
-    v_pos, v_uvs, t_pos_idx, t_uvs_idx = util.io.load_generic_model(conf.ict_dir)
+    v_pos, v_uvs, shapes = util.io.load_generic_model(conf.ict_dir)
 
+    
+    for shape in shapes:
+        output_texture = torch.zeros([512, 512, 3], dtype=torch.float32).cuda()
+        t_pos_idx = shapes[shape]['t_pos_idx']
+        t_uvs_idx = shapes[shape]['t_uvs_idx']
+        for idx, (t_pos_i, t_uvs_i) in tqdm(enumerate(zip(t_pos_idx, t_uvs_idx)), total=len(t_pos_idx), desc="Rasterizing triangles"):
+            output_texture = raster.rasterize_triangle(v_pos[t_pos_i], v_uvs[t_uvs_i], v_pos[t_pos_i], output_texture)
 
-    output_texture = torch.zeros([512, 512, 3], dtype=torch.float32).cuda()
-    for idx, (t_pos_i, t_uvs_i) in tqdm(enumerate(zip(t_pos_idx, t_uvs_idx)), total=len(t_pos_idx), desc="Rasterizing triangles"):
-        output_texture = raster.rasterize_triangle(v_pos[t_pos_i], v_uvs[t_uvs_i], v_pos[t_pos_i], output_texture)
-
-    # save a png image
-    min_val = output_texture.reshape(-1, 3).min(dim=0).values
-    max_val = output_texture.reshape(-1, 3).max(dim=0).values
-    filepath = os.path.join(conf.output_dir, 'output.png')
-    output_texture = (output_texture - min_val) / (max_val - min_val)
-    output_texture = (output_texture * 255).cpu().numpy().astype(np.uint8)
-    cv2.imwrite(filepath, output_texture)
+        # save a png image
+        min_val = output_texture.reshape(-1, 3).min(dim=0).values
+        max_val = output_texture.reshape(-1, 3).max(dim=0).values
+        filepath = os.path.join(conf.output_dir, f'output-{shape}.png')
+        output_texture = (output_texture - min_val) / (max_val - min_val)
+        output_texture = (output_texture * 255).cpu().numpy().astype(np.uint8)
+        cv2.imwrite(filepath, output_texture)
 
     print("ICT uv rasterization app terminated.")
