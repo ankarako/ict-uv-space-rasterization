@@ -14,7 +14,7 @@ def rasterize_triangle(v_pos: torch.Tensor, v_uvs: torch.Tensor, feats: torch.Te
         torch.linspace(0, 1, output_tex.shape[0]).cuda(),
         torch.linspace(0, 1, output_tex.shape[1]).cuda(),
     indexing='ij')
-
+    v_uvs = v_uvs % 1.0
     edge1 = v_uvs[1, :] - v_uvs[0, :]
     edge2 = v_uvs[2, :] - v_uvs[0, :]
 

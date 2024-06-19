@@ -41,8 +41,6 @@ def parse_obj(filepath: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, 
         obj_lines = infd.readlines()
     v_pos = []
     v_uvs = []
-    t_pos_idx = []
-    t_uvs_idx = []
     shapes = { }
     for obj_line in obj_lines:
         obj_line = obj_line.replace('\n', '')
@@ -63,10 +61,8 @@ def parse_obj(filepath: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, 
             vp_idx, vt_idx = parse_poly(obj_line)
             for vp_i in vp_idx:
                 shapes[curr_shapename]['t_pos_idx'] += [vp_i]
-                # t_pos_idx += [vp_i]
             for vt_i in vt_idx:
                 shapes[curr_shapename]['t_uvs_idx'] += [vt_i]
-                # t_uvs_idx += [vt_i]
         else:
             continue
     v_pos = torch.vstack(v_pos).float().cuda()
@@ -74,20 +70,18 @@ def parse_obj(filepath: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, 
     for name in shapes:
         shapes[name]['t_pos_idx'] = torch.vstack(shapes[name]['t_pos_idx']).long().cuda()
         shapes[name]['t_uvs_idx'] = torch.vstack(shapes[name]['t_uvs_idx']).long().cuda()
-    # t_pos_idx = torch.vstack(t_pos_idx).long().cuda()
-    # t_uvs_idx = torch.vstack(t_uvs_idx).long().cuda()
     return v_pos, v_uvs, shapes
         
     
-def load_generic_model(dir: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+def load_model(filepath: str) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Load ict facekit's generic model
 
     :param dir The directory with ICTFaceKit's data.
     :return
     """
-    filepath = os.path.join(dir, "generic_neutral_mesh.obj")
     v_pos, v_uvs, shapes = parse_obj(filepath)
+    v_uvs[:, 1] = 1.0 - v_uvs[:, 1]
     return v_pos, v_uvs, shapes
 
 
